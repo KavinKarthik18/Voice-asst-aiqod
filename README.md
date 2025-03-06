@@ -20,7 +20,7 @@ This project made for **AIQoD Hackathon 2025**, is an **AI-powered voice assista
 
 ### 📚 Real-Time Knowledge Retrieval
 - Current book inventory is stored in `books.csv`.
-- Questions about pricing, availability, and stock are answered using this data.
+- Questions about pricing, availability, reservation, and purchase are answered using this data.
 
 ### 🧠 Contextual Memory
 - The assistant maintains **short-term memory** during a call session.
