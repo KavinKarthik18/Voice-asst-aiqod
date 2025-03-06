@@ -72,10 +72,11 @@ pip install -r requirements.txt
 Create a `books.csv` file in the root folder with the following format:
 
 ```csv
-book_name,price,quantity
-The Great Gatsby,10.99,5
-1984,8.99,10
-Moby Dick,12.50,3
+book_name,author,genre,quantity_available,price,rating,format,language,pages,discount,bestseller
+The Great Gatsby,F. Scott Fitzgerald,Classic,15,9.99,4.5,Paperback,English,180,10,Yes
+1984,George Orwell,Dystopian,20,12.99,4.7,Hardcover,English,328,15,Yes
+To Kill a Mockingbird,Harper Lee,Classic,18,14.99,4.8,Paperback,English,281,5,Yes
+Pride and Prejudice,Jane Austen,Romance,12,11.99,4.6,Hardcover,English,432,10,Yes
 ```
 
 This is the data the assistant will reference when answering user queries.
@@ -110,13 +111,13 @@ ollama pull llama3.1
 
 ### Set Up a Programmable Voice Number
 1. Get a free trial **Twilio phone number**.
-2. In Twilio Console, set the number’s **Voice Webhook URL** to:
-    ```
-    https://your-ngrok-url/voice
-    ```
-3. Use **ngrok** to expose your local Flask server if running locally:
+2. Use **ngrok** to expose your local Flask server if running locally:
     ```bash
     ngrok http 5000
+    ```
+3. In Twilio Console, set the number’s **Voice Webhook URL** to:
+    ```
+    https://your-ngrok-url/voice
     ```
 
 ---
