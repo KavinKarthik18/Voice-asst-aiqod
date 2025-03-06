@@ -1,12 +1,14 @@
-# 📚Voz-AI: End-to-End Bookstore Voice Assistant with Knowledge Retrieval
+# Voz-AI: End-to-End Bookstore Voice Assistant with Knowledge Retrieval
 
-This project made for **AIQoD Hackathon 2025**, is an **AI-powered voice assistant** designed to help customers inquire about books, availability, pricing, and stock at a bookstore. Customers can call the assistant, ask natural questions via voice, and receive **dynamic, AI-generated responses** based on real-time book inventory data. The system leverages:
+This project made for **AIQoD Hackathon 2025**, is an **AI-powered voice assistant** designed to help customers inquire about books, availability, pricing, stocks, and more at a bookstore. Customers can call the assistant, ask natural questions via voice, and receive **dynamic, AI-generated responses** based on real-time book inventory data powered by a RAG-based (Retrieval-Augmented Generation) system. The system leverages:
 
 - **Twilio Programmable Voice (Speech-to-Text & Text-to-Speech)**
-- **Ollama with LLaMA 3.1** for natural language understanding and generation.
+- **Ollama with LLaMA 3.1 8B** for natural language understanding and generation.
 - **Contextual Memory and Friendly Learning** to improve user experience.
-- **Flask Backend** for handling webhooks and inventory lookup.
+- **Flask Backend** is used to handle webhooks and inventory lookup.
+- **Ngrok** Exposes the locally running Flask application to the public internet, allowing Twilio to access webhook endpoints.
 
+NOTE: This project currently uses a bookstore inventory (books.csv) as its knowledge base, but the system can be easily adapted to other domains like e-commerce, education, healthcare, or travel by replacing the dataset and fine-tuning the model for domain-specific queries and conversational responses.
 ---
 
 ## ✨ Key Features
@@ -18,7 +20,7 @@ This project made for **AIQoD Hackathon 2025**, is an **AI-powered voice assista
 
 ### 📚 Real-Time Knowledge Retrieval
 - Current book inventory is stored in `books.csv`.
-- Questions about pricing, availability, and stock are answered using this **live data**.
+- Questions about pricing, availability, and stock are answered using this data.
 
 ### 🧠 Contextual Memory
 - The assistant maintains **short-term memory** during a call session.
