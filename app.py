@@ -1,6 +1,5 @@
 from flask import Flask, request
 from twilio.twiml.voice_response import VoiceResponse, Gather
-import csv
 import logging
 import traceback
 import ollama
@@ -8,9 +7,12 @@ import pandas as pd
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(_name_)
+logger = logging.getLogger(__name__)
 
-app = Flask(_name_)
+app = Flask(__name__)
+
+# In-memory session store (per CallSid for tracking conversation memory)
+session_data = {}
 
 # Load books into a Pandas DataFrame
 def load_books():
@@ -21,24 +23,31 @@ def load_books():
     except Exception as e:
         logger.error(f"Error loading books: {str(e)}")
         logger.error(traceback.format_exc())
-        return pd.DataFrame()  # Return empty DataFrame in case of error
+        return pd.DataFrame()
 
 # Query LLaMA with Ollama
-def query_llama(user_query, books):
-    # Convert books dataframe to a structured text format
-    book_list = "\n".join([f"{row['book_name']} - ${row['price']}, {row['quantity']} in stock" for _, row in books.iterrows()])
+def query_llama(user_query, books, session_memory):
+    book_list = "\n".join([
+        f"{row['book_name']} by {row['author']} ({row['genre']}) - ${row['price']}, "
+        f"{row['quantity_available']} in stock"
+        for _, row in books.iterrows()
+    ])
+
+    memory_context = "\n".join(session_memory) if session_memory else "This is the start of the conversation."
 
     prompt = f"""
-    You are a friendly and knowledgeable AI assistant for a bookstore. Your job is to provide quick and helpful answers about book availability, pricing, and stock.  
+    You are a friendly AI bookstore assistant. Your job is to provide quick and helpful answers about book availability, pricing, and stock.
 
-    Here is the current book inventory:  
-    {book_list}  
+    Conversation history so far:
+    {memory_context}
 
-    The user asked: "{user_query}"  
+    Here is the current book inventory:
+    {book_list}
+
+    The user asked: "{user_query}"
 
     Respond in a natural, conversational manner. Keep your answer concise, engaging, and helpful. Avoid repeating the user's question—just provide the relevant information clearly and warmly.
     """
-
 
     try:
         response = ollama.chat(model="llama3.1", messages=[{"role": "user", "content": prompt}])
@@ -50,75 +59,91 @@ def query_llama(user_query, books):
 @app.route("/", methods=['GET', 'POST'])
 def home():
     if request.method == 'POST':
-        try:
-            logger.debug("Received POST request to root")
-            logger.debug(f"Request values: {request.values}")
-            resp = VoiceResponse()
-            gather = Gather(input='speech', action='/handle-input', method='POST', speechTimeout='auto', enhanced='true')
-            gather.say("Hello! I'm your book store assistant. You can ask me about available books or specific book prices. How can I help you today?")
-            resp.append(gather)
-            return str(resp)
-        except Exception as e:
-            logger.error(f"Error in root endpoint: {str(e)}")
-            logger.error(traceback.format_exc())
-            resp = VoiceResponse()
-            resp.say("We're sorry, but there was an error. Please try again later.")
-            return str(resp)
-    return "Book Store Voice Assistant is running! Access /voice endpoint for Twilio integration."
+        return start_conversation()
+    return "Book Store Voice Assistant is running!"
 
 @app.route("/voice", methods=['POST'])
 def voice():
+    return start_conversation()
+
+def start_conversation():
     try:
-        logger.debug("Received voice request")
-        logger.debug(f"Request values: {request.values}")
-        
+        call_sid = request.values.get('CallSid', 'unknown')
+        session_data[call_sid] = []  
+
+        logger.debug(f"Starting conversation for CallSid: {call_sid}")
+
         resp = VoiceResponse()
-        gather = Gather(input='speech', action='/handle-input', method='POST', speechTimeout='auto', enhanced='true')
-        gather.say("Hello! I'm your book store assistant. You can ask me about available books or specific book prices. How can I help you today?")
+        gather = Gather(
+            input='speech',
+            action='/handle-input',
+            method='POST',
+            speechTimeout='auto',
+            enhanced=True,
+            bargeIn=True
+        )
+        gather.say("Hello! I'm your bookstore assistant. How can I help you today?")
         resp.append(gather)
-        
-        response = str(resp)
-        logger.debug(f"Generated response: {response}")
-        return response
-    except Exception as e:
-        logger.error(f"Error in voice endpoint: {str(e)}")
-        logger.error(traceback.format_exc())
-        resp = VoiceResponse()
-        resp.say("We're sorry, but there was an error. Please try again later.")
+
         return str(resp)
+
+    except Exception as e:
+        logger.error(f"Error starting conversation: {str(e)}")
+        logger.error(traceback.format_exc())
+        return error_response()
 
 @app.route("/handle-input", methods=['POST'])
 def handle_input():
     try:
-        logger.debug("Received handle-input request")
-        logger.debug(f"Request values: {request.values}")
-        
+        call_sid = request.values.get('CallSid', 'unknown')
+        user_input = request.values.get('SpeechResult', '').strip().lower()
+
+        logger.debug(f"Handling input for CallSid: {call_sid}")
+        logger.debug(f"User said: {user_input}")
+
         books = load_books()
-        user_input = request.values.get('SpeechResult', '').lower()
-        logger.debug(f"User input: {user_input}")
-        
+        session_memory = session_data.get(call_sid, [])
+
         resp = VoiceResponse()
-        gather = Gather(input='speech', action='/handle-input', method='POST', speechTimeout='auto', enhanced='true')
 
-        if not user_input:
-            gather.say("I didn't catch that. Could you please repeat your question?")
-        else:
-            # Use Ollama to query book inventory with AI
-            response_text = query_llama(user_input, books)
-            gather.say(response_text)
+        # Farewell detection: Check if the user is ending the conversation
+        farewell_phrases = ["thank you", "thanks", "that's all", "goodbye", "bye", "no more questions"]
+        if any(phrase in user_input for phrase in farewell_phrases):
+            resp.say("You're very welcome! Have a great day.")
+            return str(resp)  
 
-        gather.say("Is there anything else you'd like to know?")
+        # Query LLaMA with memory
+        response_text = query_llama(user_input, books, session_memory)
+
+        # Update memory
+        session_memory.append(f"User: {user_input}")
+        session_memory.append(f"Assistant: {response_text}")
+
+        # Respond to user
+        gather = Gather(
+            input='speech',
+            action='/handle-input',
+            method='POST',
+            speechTimeout='auto',
+            enhanced=True,
+            bargeIn=True
+        )
+        gather.say(response_text)
+
+        # Remove unnecessary follow-up prompt
         resp.append(gather)
-        
-        response = str(resp)
-        logger.debug(f"Generated response: {response}")
-        return response
-    except Exception as e:
-        logger.error(f"Error in handle-input endpoint: {str(e)}")
-        logger.error(traceback.format_exc())
-        resp = VoiceResponse()
-        resp.say("We're sorry, but there was an error. Please try again later.")
+
         return str(resp)
 
-if _name_ == "_main_":
+    except Exception as e:
+        logger.error(f"Error in handle-input: {str(e)}")
+        logger.error(traceback.format_exc())
+        return error_response()
+
+def error_response():
+    resp = VoiceResponse()
+    resp.say("We're sorry, but there was an error. Please try again later.")
+    return str(resp)
+
+if __name__ == "__main__":
     app.run(debug=True, port=5000)
