@@ -1,6 +1,6 @@
 # 📚voz.AI: End-to-End Bookstore Voice Assistant with Knowledge Retrieval
 
-This project is an **AI-powered voice assistant** designed to help customers inquire about books, availability, pricing, and stock at a bookstore. Customers can call the assistant, ask natural questions via voice, and receive **dynamic, AI-generated responses** based on real-time book inventory data. The system leverages:
+This project made for **AiQOD Hackathon 2025**, is an **AI-powered voice assistant** designed to help customers inquire about books, availability, pricing, and stock at a bookstore. Customers can call the assistant, ask natural questions via voice, and receive **dynamic, AI-generated responses** based on real-time book inventory data. The system leverages:
 
 - **Twilio Programmable Voice (Speech-to-Text & Text-to-Speech)**
 - **Ollama with LLaMA 3.1** for natural language understanding and generation.
