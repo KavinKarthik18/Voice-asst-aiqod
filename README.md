@@ -8,7 +8,7 @@ This project made for **AIQoD Hackathon 2025**, is an **AI-powered voice assista
 - **Flask Backend** is used to handle webhooks and inventory lookup.
 - **Ngrok** Exposes the locally running Flask application to the public internet, allowing Twilio to access webhook endpoints.
 
-NOTE: This project currently uses a bookstore inventory (books.csv) as its knowledge base, but the system can be easily adapted to other domains like e-commerce, education, healthcare, or travel by replacing the dataset and fine-tuning the model for domain-specific queries and conversational responses.
+###NOTE: This project currently uses a bookstore inventory (books.csv) as its knowledge base, but the system can be easily adapted to other domains like e-commerce, education, healthcare, or travel by replacing the dataset and fine-tuning the model for domain-specific queries and conversational responses.
 ---
 
 ## ✨ Key Features
