@@ -1,0 +1,7 @@
+flask==2.0.1
+twilio==7.16.0
+langchain==0.1.0
+ollama==0.1.6
+scikit-learn==1.0.2
+pandas==2.0.3
+numpy==1.21.6 
