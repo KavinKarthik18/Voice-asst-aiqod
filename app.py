@@ -28,10 +28,12 @@ def load_books():
 # Query LLaMA with Ollama
 def query_llama(user_query, books, session_memory):
     book_list = "\n".join([
-        f"{row['book_name']} by {row['author']} ({row['genre']}) - ${row['price']}, "
-        f"{row['quantity_available']} in stock"
-        for _, row in books.iterrows()
-    ])
+    f"{row['book_name']} by {row['author']} ({row['genre']}) - ${row['price']}, "
+    f"{row['quantity_available']} in stock, Rating: {row['rating']}/5, Format: {row['format']}, "
+    f"Language: {row['language']}, Pages: {row['pages']}, Discount: {row['discount']}%, "
+    f"{'Bestseller' if row['bestseller'] == 'Yes' else 'Regular'}"
+    for _, row in books.iterrows()
+])
 
     memory_context = "\n".join(session_memory) if session_memory else "This is the start of the conversation."
 
