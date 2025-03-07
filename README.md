@@ -1,5 +1,6 @@
 # Voz-AI: End-to-End Bookstore Voice Assistant with Knowledge Retrieval
 
+COMPLETE DEMO VIDEO:
 https://youtu.be/kwgYwYUD6BE?si=yhapbnhmFvuNM-nh
 
 This project made for **AIQoD Hackathon 2025**, is an **AI-powered voice assistant** designed to help customers inquire about books, availability, pricing, stocks, and more at a bookstore. Customers can call the assistant, ask natural questions via voice, and receive **dynamic, AI-generated responses** based on real-time book inventory data powered by a RAG-based (Retrieval-Augmented Generation) system. The system leverages:
