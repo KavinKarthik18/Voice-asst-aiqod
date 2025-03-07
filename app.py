@@ -14,7 +14,7 @@ app = Flask(__name__)
 # In-memory session store (per CallSid for tracking conversation memory)
 session_data = {}
 
-# Load books into a Pandas DataFrame
+# Loading knowledge base 
 def load_books():
     try:
         df = pd.read_csv('books.csv')
